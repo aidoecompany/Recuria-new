@@ -1,9 +1,9 @@
 // ============================================
 // RECURIA — Login Page
 // ============================================
-export const dynamic = "force-dynamic"; 
-
 "use client";
+
+export const dynamic = "force-dynamic"; 
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
