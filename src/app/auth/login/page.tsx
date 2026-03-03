@@ -1,6 +1,7 @@
 // ============================================
 // RECURIA — Login Page
 // ============================================
+export const dynamic = "force-dynamic"; 
 
 "use client";
 
