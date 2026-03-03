@@ -1,22 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, name, age, gender, symptoms } = body;
+    const { message, name, age, gender, symptoms, history = [] } = body;
+
+    // ✅ Initialize inside handler (important for Vercel build)
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
+    });
 
     // ===============================
-    // NORMAL CHAT (hey, how are you)
+    // NORMAL CHAT
     // ===============================
     if (message && !symptoms) {
       const chat = await openai.chat.completions.create({
@@ -28,18 +29,18 @@ export async function POST(req: Request) {
 You are Recuria, powered by Aidoe.
 
 Personality:
-- Sound natural, warm and human.
+- Natural, warm and human.
 - Slightly cool but professional.
-- Keep answers short and clear.
+- Keep answers short.
 - Use max 1 emoji.
 
 Rules:
-- Respond normally to greetings like "hey", "hello", "how are you".
-- Light small talk is allowed.
-- If the user asks something completely unrelated to healthcare (movies, celebrities, politics, tech etc.), reply:
-  "Sorry, I assist primarily with medical and healthcare-related queries."
+- Respond normally to greetings.
+- Light small talk allowed.
+- If clearly non-medical topic, politely redirect.
 `
           },
+          ...history,
           {
             role: "user",
             content: message
@@ -85,18 +86,16 @@ Rules:
 You are Recuria, powered by Aidoe.
 
 Rules:
-- Do NOT repeat introduction every time.
-- Sound confident, calm and human.
-- Keep response structured and concise.
-- Use max 2 relevant emojis.
-- Provide preliminary medical analysis only.
-- Mention possible causes.
-- Mention risk level (Low / Moderate / High).
+- Sound confident and human.
+- Structured and concise.
+- Use max 2 emojis.
+- Mention causes.
+- Mention risk level.
 - Suggest next steps.
-- Always recommend consulting a doctor.
-- If topic is clearly non-medical, politely redirect.
+- Recommend consulting doctor.
 `
         },
+        ...history,
         {
           role: "user",
           content: `
