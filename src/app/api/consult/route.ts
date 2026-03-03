@@ -13,10 +13,10 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, name, age, gender, symptoms } = body;
+    const { name, age, gender, symptoms, message } = body;
 
     // ===============================
-    // NORMAL CHAT (hey, how are you)
+    // 1️⃣ Normal chat (Hey, how are you, etc.)
     // ===============================
     if (message && !symptoms) {
       const chat = await openai.chat.completions.create({
@@ -27,17 +27,14 @@ export async function POST(req: Request) {
             content: `
 You are Recuria, powered by Aidoe.
 
-Personality:
-- Sound natural, warm and human.
-- Slightly cool but professional.
-- Keep answers short and clear.
-- Use max 1 emoji.
-
-Rules:
-- Respond normally to greetings like "hey", "hello", "how are you".
-- Light small talk is allowed.
-- If the user asks something completely unrelated to healthcare (movies, celebrities, politics, tech etc.), reply:
-  "Sorry, I assist primarily with medical and healthcare-related queries."
+Personality Rules:
+- Speak naturally like a real human.
+- Slightly cool, calm, intelligent tone.
+- Friendly but professional.
+- Use maximum 1 emoji.
+- Keep replies short.
+- If user asks non-medical questions, politely say:
+  "Sorry, I assist only with medical-related queries."
 `
           },
           {
@@ -53,9 +50,8 @@ Rules:
     }
 
     // ===============================
-    // MEDICAL FLOW
+    // 2️⃣ Save Patient
     // ===============================
-
     const { data: patient, error } = await supabase
       .from("patients")
       .insert([
@@ -70,12 +66,16 @@ Rules:
       .single();
 
     if (error || !patient) {
+      console.error(error);
       return Response.json(
         { error: "Failed to save patient." },
         { status: 500 }
       );
     }
 
+    // ===============================
+    // 3️⃣ Medical AI Response
+    // ===============================
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -84,23 +84,24 @@ Rules:
           content: `
 You are Recuria, powered by Aidoe.
 
-Rules:
-- Do NOT repeat introduction every time.
-- Sound confident, calm and human.
-- Keep response structured and concise.
-- Use max 2 relevant emojis.
+Behavior Rules:
+- Start with: "This is Recuria, powered by Aidoe."
+- Sound human, clear, and slightly cool.
+- Keep response short and on point.
+- Use maximum 2 relevant emojis.
 - Provide preliminary medical analysis only.
 - Mention possible causes.
 - Mention risk level (Low / Moderate / High).
 - Suggest next steps.
-- Always recommend consulting a doctor.
-- If topic is clearly non-medical, politely redirect.
+- Always advise consulting a healthcare professional.
+- If question is not health-related, reply:
+  "Sorry, I assist only with medical-related queries."
 `
         },
         {
           role: "user",
           content: `
-Patient:
+Patient Details:
 Name: ${name}
 Age: ${age}
 Gender: ${gender}
@@ -109,7 +110,7 @@ Symptoms: ${symptoms}
 Provide:
 1. Possible causes
 2. Risk level
-3. Next step
+3. Next recommended step
 `
         }
       ]
@@ -117,6 +118,9 @@ Provide:
 
     const aiResponse = completion.choices[0].message.content;
 
+    // ===============================
+    // 4️⃣ Save Consultation
+    // ===============================
     await supabase.from("consultations").insert([
       {
         patient_id: patient.id,
@@ -124,6 +128,9 @@ Provide:
       },
     ]);
 
+    // ===============================
+    // 5️⃣ Return Response
+    // ===============================
     return Response.json({
       response: aiResponse,
     });

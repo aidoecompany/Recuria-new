@@ -65,10 +65,11 @@ export function useChat(sessionId?: string) {
           setCurrentSessionId(data.session_id);
         }
 
+        // ✅ FIX IS HERE — data.response instead of data.content
         const assistantMessage: UIMessage = {
           id: uuidv4(),
           role: "assistant",
-          content: data.content,
+          content: data.response,
           timestamp: new Date(),
           isNew: true,
         };
