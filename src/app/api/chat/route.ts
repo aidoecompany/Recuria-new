@@ -6,9 +6,9 @@ import OpenAI from "openai";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, name, age, gender, symptoms, history = [] } = body;
 
-    // ✅ Initialize inside handler (important for Vercel build)
+    const { message, name, age, gender, symptoms, clinic, history = [] } = body;
+
     const supabase = createClient(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -17,6 +17,82 @@ export async function POST(req: Request) {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY!,
     });
+
+    let clinicPrompt = "";
+
+    if (clinic) {
+
+      let departments: any[] = [];
+      let doctors: any[] = [];
+      let timings: any[] = [];
+
+      // ===============================
+      // SUNSHINE CLINIC
+      // ===============================
+      if (clinic === "sunshine") {
+
+        const { data: dep } = await supabase
+          .from("sundep")
+          .select("*");
+
+        const { data: doc } = await supabase
+          .from("sundoctors")
+          .select("*");
+
+        const { data: tim } = await supabase
+          .from("suntimings")
+          .select("*");
+
+        departments = dep || [];
+        doctors = doc || [];
+        timings = tim || [];
+
+      }
+
+      // ===============================
+      // APOLLO CLINIC
+      // ===============================
+      else if (clinic === "apollo") {
+
+        const { data: dep } = await supabase
+          .from("departments")
+          .select("*");
+
+        const { data: doc } = await supabase
+          .from("doctors")
+          .select("*");
+
+        departments = dep || [];
+        doctors = doc || [];
+
+      }
+
+      clinicPrompt = `
+You are the AI assistant for ${clinic} clinic.
+
+Clinic Departments:
+${departments?.map((d:any) =>
+  `- ${d.department_name || d.name} (${d.floor || d.location || ""})`
+).join("\n")}
+
+Doctors:
+${doctors?.map((d:any) =>
+  `- ${d.doctor_name || d.name} (${d.department || d.specialty || ""})`
+).join("\n")}
+
+Doctor Timings:
+${timings?.map((t:any) =>
+  `- ${t.doctor_name}: ${t.day} ${t.start_time} - ${t.end_time}`
+).join("\n")}
+
+Help patients with clinic information, navigation, and doctor availability.
+
+IMPORTANT:
+Only use the clinic data provided above.
+Never invent departments, doctors, or schedules.
+If information is missing, politely say it is not available in the clinic database.
+`;
+    }
 
     // ===============================
     // NORMAL CHAT
@@ -28,6 +104,8 @@ export async function POST(req: Request) {
           {
             role: "system",
             content: `
+${clinicPrompt}
+
 You are Recuria, powered by Aidoe.
 
 Personality:
@@ -85,6 +163,8 @@ Rules:
         {
           role: "system",
           content: `
+${clinicPrompt}
+
 You are Recuria, powered by Aidoe.
 
 Rules:

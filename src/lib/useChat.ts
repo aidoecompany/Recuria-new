@@ -44,6 +44,12 @@ export function useChat(sessionId?: string) {
         .slice(-20)
         .map((m) => ({ role: m.role, content: m.content }));
 
+      // ✅ Detect clinic from URL
+      const clinic =
+        typeof window !== "undefined"
+          ? window.location.pathname.split("/")[1] || "apollo"
+          : "apollo";
+
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -52,6 +58,7 @@ export function useChat(sessionId?: string) {
             message: content.trim(),
             session_id: currentSessionId,
             history,
+            clinic, // ✅ sent to API
           }),
         });
 
@@ -65,7 +72,7 @@ export function useChat(sessionId?: string) {
           setCurrentSessionId(data.session_id);
         }
 
-        // ✅ FIX IS HERE — data.response instead of data.content
+        // Assistant response
         const assistantMessage: UIMessage = {
           id: uuidv4(),
           role: "assistant",
