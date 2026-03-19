@@ -38,17 +38,20 @@ export function ChatWindow() {
       {/* Sidebar */}
       <div className="hidden lg:flex">
         <Sidebar
-          isOpen={true}
-          onClose={() => {}}
-          onNewChat={handleNewChat}
-        />
+  isOpen={true}
+  onClose={() => {}}
+  onNewChat={handleNewChat}
+  sessions={sessions}
+  onLoadSession={loadSession}
+/>
       </div>
       <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        onNewChat={handleNewChat}
-      />
-
+  isOpen={sidebarOpen}
+  onClose={() => setSidebarOpen(false)}
+  onNewChat={handleNewChat}
+  sessions={sessions}
+  onLoadSession={loadSession}
+/>
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
