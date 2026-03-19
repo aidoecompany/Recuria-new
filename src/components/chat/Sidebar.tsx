@@ -101,15 +101,7 @@ export function Sidebar({ isOpen, onClose, onNewChat, sessions, onLoadSession }:
           ))}
         </div>
 
-        {/* Footer disclaimer */}
-        <div className="px-5 py-4 border-t border-black/[0.05]">
-          <div className="text-[10.5px] text-gray-300 leading-relaxed">
-            <span className="font-medium text-gray-400 block mb-1">
-              Medical AI Platform
-            </span>
-            Recuria is an AI assistant and does not replace professional medical judgment.
-          </div>
-        </div>
+        
       </motion.aside>
     </>
   );
