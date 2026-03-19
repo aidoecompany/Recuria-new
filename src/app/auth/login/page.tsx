@@ -1,13 +1,12 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
+const supabase = createClient();
+
 export default function LoginPage() {
-  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
   const [email, setEmail] = useState("");
