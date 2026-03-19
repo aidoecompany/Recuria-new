@@ -12,7 +12,9 @@ import type { UIMessage } from "@/types";
 const INITIAL_MESSAGE: UIMessage = {
   id: "welcome",
   role: "assistant",
-  content: "Hey! This is Recuria, how shall I help you?",
+  content: typeof window !== "undefined" && window.location.pathname.split("/")[1]
+  ? `Hey! This is ${window.location.pathname.split("/")[1].replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}, how shall I help you?`
+  : "Hey! This is Recuria, how shall I help you?",
   timestamp: new Date(),
 };
 
