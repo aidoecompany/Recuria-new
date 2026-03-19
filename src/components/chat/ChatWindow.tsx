@@ -13,7 +13,7 @@ import { Sidebar } from "./Sidebar";
 import { useChat } from "@/lib/useChat";
 
 export function ChatWindow() {
-  const { messages, isLoading, sendMessage, clearMessages } = useChat();
+  const { messages, isLoading, sendMessage, clearMessages, sessions, loadSession } = useChat();
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
