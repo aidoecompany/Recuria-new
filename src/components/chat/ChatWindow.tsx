@@ -105,8 +105,6 @@ export function ChatWindow() {
     </h2>
   </motion.div>
 )}
-          )}
-
           <div className="max-w-[720px] mx-auto px-6">
             <AnimatePresence initial={false}>
               {messages.map((msg) => (
