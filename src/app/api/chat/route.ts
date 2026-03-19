@@ -31,78 +31,9 @@ export async function POST(req: Request) {
         departments = dep || [];
         doctors = doc || [];
         timings = tim || [];
-      } 
-      else if (clinic === "apollo") {
-  const { data: dep } = await supabase.from("departments").select("*");
-  const { data: doc } = await supabase.from("doctors").select("*");
-  departments = dep || [];
-  doctors = doc || [];
-}
 
-// ✅ Fallback — load from businesses table for any other clinic
-else {
-  const { data: biz } = await supabase
-  .from("businesses")
-  .select("*")
-  .eq("slug", clinic)
-  .single();
-  if (biz) {
-    const { data: svcs } = await supabase.from("services").select("*").eq("owner_email", biz.owner_email);
-    const { data: faqRows } = await supabase.from("faqs").select("*").eq("owner_email", biz.owner_email);
-
-    clinicPrompt = `
-You are the AI assistant for ${biz.business_name}.
-Business Hours: ${biz.address || "Not specified"}
-
-Services Offered:
-${(svcs || []).map((s: any) => `- ${s.title}`).join("\n")}
-
-Frequently Asked Questions:
-${(faqRows || []).map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n")}
-
-IMPORTANT: Only use the information provided above. Never invent services or FAQs.
-`;
-  }
-}
-      // ✅ Load business data saved from dashboard
-      const { data: business } = await supabase
-        .from("businesses")
-        .select("*")
-        .eq("business_name", clinic)
-        .single();
-
-      const { data: services } = await supabase
-        .from("services")
-        .select("*")
-        .eq("owner_email", business?.owner_email || "");
-
-      const { data: faqs } = await supabase
-        .from("faqs")
-        .select("*")
-        .eq("owner_email", business?.owner_email || "");
-
-      const businessBlock = business ? `
-Business Name: ${business.business_name}
-Phone: ${business.phone_number || "N/A"}
-Address: ${business.address || "N/A"}
-` : "";
-
-      const servicesBlock = services?.length ? `
-Services Offered:
-${services.map((s: any) => `- ${s.title}${s.description ? `: ${s.description}` : ""}`).join("\n")}
-` : "";
-
-      const faqsBlock = faqs?.length ? `
-Frequently Asked Questions:
-${faqs.map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n")}
-` : "";
-
-      clinicPrompt = `
-You are the AI assistant for ${clinic} clinic.
-
-${businessBlock}
-${servicesBlock}
-${faqsBlock}
+        clinicPrompt = `
+You are the AI assistant for Sunshine clinic.
 
 Clinic Departments:
 ${departments.map((d: any) => `- ${d.department_name || d.name} (${d.floor || d.location || ""})`).join("\n")}
@@ -113,13 +44,54 @@ ${doctors.map((d: any) => `- ${d.doctor_name || d.name} (${d.department || d.spe
 Doctor Timings:
 ${timings.map((t: any) => `- ${t.doctor_name}: ${t.day} ${t.start_time} - ${t.end_time}`).join("\n")}
 
-Help patients with clinic information, navigation, and doctor availability.
+IMPORTANT: Only use the clinic data provided above. Never invent departments, doctors, or schedules.
+`;
 
-IMPORTANT:
-Only use the clinic data provided above.
-Never invent departments, doctors, schedules, services, or FAQs.
+      } else if (clinic === "apollo") {
+        const { data: dep } = await supabase.from("departments").select("*");
+        const { data: doc } = await supabase.from("doctors").select("*");
+        departments = dep || [];
+        doctors = doc || [];
+
+        clinicPrompt = `
+You are the AI assistant for Apollo clinic.
+
+Clinic Departments:
+${departments.map((d: any) => `- ${d.department_name || d.name} (${d.floor || d.location || ""})`).join("\n")}
+
+Doctors:
+${doctors.map((d: any) => `- ${d.doctor_name || d.name} (${d.department || d.specialty || ""})`).join("\n")}
+
+IMPORTANT: Only use the clinic data provided above. Never invent departments, doctors, or schedules.
+`;
+
+      } else {
+        // ✅ Load from businesses table by slug
+        const { data: biz } = await supabase
+          .from("businesses")
+          .select("*")
+          .eq("slug", clinic)
+          .single();
+
+        if (biz) {
+          const { data: svcs } = await supabase.from("services").select("*").eq("owner_email", biz.owner_email);
+          const { data: faqRows } = await supabase.from("faqs").select("*").eq("owner_email", biz.owner_email);
+
+          clinicPrompt = `
+You are the AI assistant for ${biz.business_name}.
+Business Hours: ${biz.address || "Not specified"}
+
+Services Offered:
+${(svcs || []).map((s: any) => `- ${s.title}`).join("\n")}
+
+Frequently Asked Questions:
+${(faqRows || []).map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n")}
+
+IMPORTANT: Only use the information provided above. Never invent services or FAQs.
 If information is missing, politely say it is not available.
 `;
+        }
+      }
     }
 
     // NORMAL CHAT
