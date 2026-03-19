@@ -42,11 +42,10 @@ export async function POST(req: Request) {
 // ✅ Fallback — load from businesses table for any other clinic
 else {
   const { data: biz } = await supabase
-    .from("businesses")
-    .select("*")
-    .eq("business_name", clinic)
-    .single();
-
+  .from("businesses")
+  .select("*")
+  .eq("slug", clinic)
+  .single();
   if (biz) {
     const { data: svcs } = await supabase.from("services").select("*").eq("owner_email", biz.owner_email);
     const { data: faqRows } = await supabase.from("faqs").select("*").eq("owner_email", biz.owner_email);
