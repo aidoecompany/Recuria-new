@@ -94,41 +94,17 @@ export function ChatWindow() {
         <div className="flex-1 overflow-y-auto scrollbar-thin py-8">
           {/* Welcome card */}
           {messages.length <= 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="max-w-[480px] mx-auto text-center px-6 pb-8"
-            >
-              <div className="w-14 h-14 rounded-[16px] bg-gradient-to-br from-[#e8f4dd] to-[#c8e6b0] flex items-center justify-center text-2xl mx-auto mb-4">
-                🩺
-              </div>
-              <h2 className="font-serif text-[22px] text-gray-950 mb-2">
-                Clinical AI Assistant
-              </h2>
-              <p className="text-[13.5px] text-gray-400 leading-relaxed">
-                Ask me about symptoms, medications, clinical guidelines, drug
-                interactions, and more. Built for healthcare professionals.
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center mt-5">
-                {[
-                  "Drug interactions",
-                  "Symptom analysis",
-                  "Dosage guidance",
-                  "Clinical guidelines",
-                ].map((chip) => (
-                  <button
-                    key={chip}
-                    onClick={() => {
-                      setInput(chip);
-                    }}
-                    className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors bg-white"
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay: 0.1 }}
+    className="max-w-[480px] mx-auto text-center px-6 pb-8"
+  >
+    <h2 className="font-serif text-[22px] text-gray-950 mb-2">
+      AI Assistant
+    </h2>
+  </motion.div>
+)}
           )}
 
           <div className="max-w-[720px] mx-auto px-6">
