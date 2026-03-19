@@ -5,10 +5,9 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { createClient } from "@/lib/supabase/client";
 import type { UIMessage } from "@/types";
 
-const supabase = createClient();
+const STORAGE_KEY = "recuria_sessions";
 
 function getInitialMessage(): UIMessage {
   const slug = typeof window !== "undefined" ? window.location.pathname.split("/")[1] : "";
@@ -23,6 +22,18 @@ function getInitialMessage(): UIMessage {
   };
 }
 
+function getSavedSessions() {
+  if (typeof window === "undefined") return [];
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
+function persistSessions(sessions: any[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+}
+
 export function useChat(sessionId?: string) {
   const [messages, setMessages] = useState<UIMessage[]>([getInitialMessage()]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,53 +41,39 @@ export function useChat(sessionId?: string) {
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(sessionId);
   const [sessions, setSessions] = useState<{ id: string; title: string; active: boolean }[]>([]);
 
-  // Load sessions list on mount
   useEffect(() => {
-    loadSessions();
+    const saved = getSavedSessions();
+    setSessions(saved.map((s: any, i: number) => ({ ...s, active: i === 0 })));
   }, []);
 
-  async function loadSessions() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase
-      .from("conversations")
-      .select("id, title, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    if (data) {
-      setSessions(data.map((s, i) => ({ id: s.id, title: s.title || "Untitled", active: i === 0 })));
-    }
-  }
-
-  async function loadSession(id: string) {
-    const { data } = await supabase
-      .from("conversations")
-      .select("messages")
-      .eq("id", id)
-      .single();
-    if (data?.messages) {
-      setMessages(data.messages);
+  const loadSession = useCallback((id: string) => {
+    const saved = getSavedSessions();
+    const session = saved.find((s: any) => s.id === id);
+    if (session?.messages) {
+      setMessages(session.messages);
       setCurrentSessionId(id);
-      setSessions(prev => prev.map(s => ({ ...s, active: s.id === id })));
+      setSessions(saved.map((s: any) => ({ ...s, active: s.id === id })));
     }
-  }
+  }, []);
 
-  async function saveConversation(msgs: UIMessage[], sessId?: string) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const saveSession = useCallback((msgs: UIMessage[], sessId?: string) => {
+    const saved = getSavedSessions();
     const title = msgs.find(m => m.role === "user")?.content?.slice(0, 40) || "New Session";
     if (sessId) {
-      await supabase.from("conversations").update({ messages: msgs, title }).eq("id", sessId);
+      const idx = saved.findIndex((s: any) => s.id === sessId);
+      if (idx > -1) { saved[idx] = { ...saved[idx], messages: msgs, title }; }
+      else { saved.unshift({ id: sessId, title, messages: msgs }); }
+      persistSessions(saved);
+      setSessions(saved.map((s: any) => ({ ...s, active: s.id === sessId })));
+      return sessId;
     } else {
-      const { data } = await supabase.from("conversations").insert({
-        user_id: user.id,
-        title,
-        messages: msgs,
-      }).select().single();
-      return data?.id;
+      const newId = uuidv4();
+      saved.unshift({ id: newId, title, messages: msgs });
+      persistSessions(saved);
+      setSessions(saved.map((s: any, i: number) => ({ ...s, active: i === 0 })));
+      return newId;
     }
-  }
+  }, []);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -128,16 +125,11 @@ export function useChat(sessionId?: string) {
           isNew: true,
         };
 
-        const newMessages = [...messages, userMessage, assistantMessage];
-        setMessages(prev => [...prev, assistantMessage]);
+        setMessages((prev) => [...prev, assistantMessage]);
 
-        // Save to Supabase
         const allMsgs = [...messages.filter(m => m.id !== "welcome"), userMessage, assistantMessage];
-        const newSessId = await saveConversation(allMsgs, currentSessionId);
-        if (newSessId) {
-          setCurrentSessionId(newSessId);
-          loadSessions();
-        }
+        const newSessId = saveSession(allMsgs, currentSessionId);
+        if (!currentSessionId) setCurrentSessionId(newSessId);
 
       } catch (err) {
         const errorText = err instanceof Error ? err.message : "Failed to get response";
@@ -153,14 +145,13 @@ export function useChat(sessionId?: string) {
         setIsLoading(false);
       }
     },
-    [messages, isLoading, currentSessionId]
+    [messages, isLoading, currentSessionId, saveSession]
   );
 
   const clearMessages = useCallback(() => {
     setMessages([getInitialMessage()]);
     setCurrentSessionId(undefined);
     setError(null);
-    loadSessions();
   }, []);
 
   return {
