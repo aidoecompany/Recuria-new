@@ -31,13 +31,40 @@ export async function POST(req: Request) {
         departments = dep || [];
         doctors = doc || [];
         timings = tim || [];
-      } else if (clinic === "apollo") {
-        const { data: dep } = await supabase.from("departments").select("*");
-        const { data: doc } = await supabase.from("doctors").select("*");
-        departments = dep || [];
-        doctors = doc || [];
-      }
+      } 
+      else if (clinic === "apollo") {
+  const { data: dep } = await supabase.from("departments").select("*");
+  const { data: doc } = await supabase.from("doctors").select("*");
+  departments = dep || [];
+  doctors = doc || [];
+}
 
+// ✅ Fallback — load from businesses table for any other clinic
+else {
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("*")
+    .eq("business_name", clinic)
+    .single();
+
+  if (biz) {
+    const { data: svcs } = await supabase.from("services").select("*").eq("owner_email", biz.owner_email);
+    const { data: faqRows } = await supabase.from("faqs").select("*").eq("owner_email", biz.owner_email);
+
+    clinicPrompt = `
+You are the AI assistant for ${biz.business_name}.
+Business Hours: ${biz.address || "Not specified"}
+
+Services Offered:
+${(svcs || []).map((s: any) => `- ${s.title}`).join("\n")}
+
+Frequently Asked Questions:
+${(faqRows || []).map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n")}
+
+IMPORTANT: Only use the information provided above. Never invent services or FAQs.
+`;
+  }
+}
       // ✅ Load business data saved from dashboard
       const { data: business } = await supabase
         .from("businesses")
