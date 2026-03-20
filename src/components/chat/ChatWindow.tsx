@@ -36,20 +36,14 @@ export function ChatWindow() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f8f6]">
       {/* Sidebar */}
+     {/* Sidebar */}
       <Sidebar
-  isOpen={sidebarOpen}
-  onClose={() => setSidebarOpen(false)}
-  onNewChat={handleNewChat}
-  sessions={sessions}
-  onLoadSession={loadSession}
-/>
-      <Sidebar
-  isOpen={sidebarOpen}
-  onClose={() => setSidebarOpen(false)}
-  onNewChat={handleNewChat}
-  sessions={sessions}
-  onLoadSession={loadSession}
-/>
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onNewChat={handleNewChat}
+        sessions={sessions}
+        onLoadSession={loadSession}
+      />
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
