@@ -98,7 +98,7 @@ export function Sidebar({ isOpen, onClose, onNewChat, sessions, onLoadSession }:
         </div>
 
         
-      </motion.aside>
+     </aside>
     </>
   );
 }
