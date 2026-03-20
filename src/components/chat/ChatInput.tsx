@@ -51,7 +51,7 @@ export function ChatInput({ value, onChange, onSend, isLoading }: ChatInputProps
             value={value}
             onChange={handleChange}
             onKeyDown={handleKey}
-            placeholder="Ask a clinical question..."
+            placeholder="Ask a question..."
             rows={1}
             className="
               flex-1 bg-transparent border-none outline-none resize-none
