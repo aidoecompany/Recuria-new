@@ -42,7 +42,6 @@ export function ChatWindow() {
   onNewChat={handleNewChat}
   sessions={sessions}
   onLoadSession={loadSession}
-  isDesktop={false}
 />
       <Sidebar
   isOpen={sidebarOpen}
