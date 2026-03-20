@@ -16,9 +16,10 @@ const supabase = createClient(
 // ── Trial check ──────────────────────────────────────────
 const UNLIMITED = ["sanchaykrishna15@gmail.com", "hari8haran8@gmail.com", "aidoecompany@gmail.com"];
 if (userEmail && !UNLIMITED.includes(userEmail)) {
-  const { data: userData } = await supabase.auth.admin.getUserByEmail(userEmail);
-  if (userData?.user) {
-    const created = new Date(userData.user.created_at);
+  const { data: userData } = await supabase.auth.admin.listUsers();
+  const foundUser = userData?.users?.find((u: any) => u.email === userEmail);
+  if (foundUser) {
+    const created = new Date(foundUser.created_at);
     const diffDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
     if (diffDays > 7) {
       return Response.json({
