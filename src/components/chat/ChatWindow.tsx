@@ -36,15 +36,14 @@ export function ChatWindow() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f8f6]">
       {/* Sidebar */}
-      <div className="hidden lg:flex">
-        <Sidebar
-  isOpen={true}
-  onClose={() => {}}
+      <Sidebar
+  isOpen={sidebarOpen}
+  onClose={() => setSidebarOpen(false)}
   onNewChat={handleNewChat}
   sessions={sessions}
   onLoadSession={loadSession}
+  isDesktop={false}
 />
-      </div>
       <Sidebar
   isOpen={sidebarOpen}
   onClose={() => setSidebarOpen(false)}
