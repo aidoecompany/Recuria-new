@@ -38,18 +38,17 @@ export function Sidebar({ isOpen, onClose, onNewChat, sessions, onLoadSession }:
 
       {/* Sidebar */}
       <motion.aside
-        className={`
-          fixed lg:relative inset-y-0 left-0 z-20
-          w-64 bg-white border-r border-black/[0.06]
-          flex flex-col
-          lg:translate-x-0
-          transition-transform duration-300
-        `}
-        initial={false}
-        animate={{ x: isOpen ? 0 : "-100%" }}
-        style={{ translateX: undefined }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
+  className={`
+    fixed lg:relative inset-y-0 left-0 z-20
+    w-64 bg-white border-r border-black/[0.06]
+    flex flex-col
+    transition-transform duration-300
+  `}
+  initial={false}
+  animate={{ x: isOpen || (typeof window !== "undefined" && window.innerWidth >= 1024) ? 0 : "-100%" }}
+  style={{ translateX: undefined }}
+  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+>
         {/* Logo */}
         <div className="px-6 py-7 border-b border-black/[0.05]">
           <div className="font-serif text-[22px] tracking-tight text-gray-950">
