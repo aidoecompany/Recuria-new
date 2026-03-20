@@ -101,8 +101,11 @@ export function ChatWindow() {
     className="max-w-[480px] mx-auto text-center px-6 pb-8"
   >
     <h2 className="font-serif text-[22px] text-gray-950 mb-2">
-      AI Assistant
-    </h2>
+  AI Assistant
+</h2>
+<p className="text-[14px] text-gray-500 mt-1">
+  Your Personalised Assistant is right here! Go ahead and ask me
+</p>
   </motion.div>
 )}
           <div className="max-w-[720px] mx-auto px-6">
