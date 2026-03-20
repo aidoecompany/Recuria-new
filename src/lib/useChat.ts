@@ -49,9 +49,12 @@ export function useChat(sessionId?: string) {
   const loadSession = useCallback((id: string) => {
     const saved = getSavedSessions();
     const session = saved.find((s: any) => s.id === id);
-    if (session?.messages) {
-      setMessages(session.messages);
-      setCurrentSessionId(id);
+   if (session?.messages) {
+  setMessages(session.messages.map((m: any) => ({
+    ...m,
+    timestamp: new Date(m.timestamp),
+  })));
+  setCurrentSessionId(id);
       setSessions(saved.map((s: any) => ({ ...s, active: s.id === id })));
     }
   }, []);
