@@ -114,7 +114,7 @@ export function ChatInput({ value, onChange, onSend, isLoading }: ChatInputProps
         </div>
 
         <p className="text-center text-[11px] text-gray-300 mt-2.5">
-          Recuria is an AI assistant and does not replace professional medical judgment.
+         Recuria is an AI assistant and does not replace professional judgment.
         </p>
       </div>
     </div>
