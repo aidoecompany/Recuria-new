@@ -6,12 +6,28 @@ import OpenAI from "openai";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { message, name, age, gender, symptoms, clinic, history = [] } = body;
+    const { message, name, age, gender, symptoms, clinic, history = [], userEmail } = body;
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+// ── Trial check ──────────────────────────────────────────
+const UNLIMITED = ["sanchaykrishna15@gmail.com", "hari8haran8@gmail.com", "aidoecompany@gmail.com"];
+if (userEmail && !UNLIMITED.includes(userEmail)) {
+  const { data: userData } = await supabase.auth.admin.getUserByEmail(userEmail);
+  if (userData?.user) {
+    const created = new Date(userData.user.created_at);
+    const diffDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+    if (diffDays > 7) {
+      return Response.json({
+        response: "⚠️ Your trial version is only available for 7 days. Upgrade for more usage."
+      });
+    }
+  }
+}
+// ─────────────────────────────────────────────────────────
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY!,
