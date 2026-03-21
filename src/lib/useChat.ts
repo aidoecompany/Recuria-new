@@ -98,9 +98,9 @@ export function useChat(sessionId?: string) {
         .map((m) => ({ role: m.role, content: m.content }));
 
       const clinic =
-        typeof window !== "undefined"
-          ? window.location.pathname.split("/")[1] || "apollo"
-          : "apollo";
+  typeof window !== "undefined"
+    ? window.location.pathname.split("/")[1] || ""
+    : "";
 
       try {
         const res = await fetch("/api/chat", {
