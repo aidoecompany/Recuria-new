@@ -15,16 +15,19 @@ const supabase = createClient(
 
 // ── Trial check ──────────────────────────────────────────
 const UNLIMITED = ["sanchaykrishna15@gmail.com", "hari8haran8@gmail.com", "aidoecompany@gmail.com"];
-if (userEmail && !UNLIMITED.includes(userEmail)) {
-  const { data: userData } = await supabase.auth.admin.listUsers();
-  const foundUser = userData?.users?.find((u: any) => u.email === userEmail);
-  if (foundUser) {
-    const created = new Date(foundUser.created_at);
-    const diffDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
-    if (diffDays > 7) {
-      return Response.json({
-        response: "⚠️ Your trial version is only available for 7 days. Upgrade for more usage."
-      });
+if (userEmail && !UNLIMITED.includes(userEmail) && !clinic) {
+  const { data: extData } = await supabase.from("extended_users").select("email").eq("email", userEmail).single();
+  if (!extData) {
+    const { data: userData } = await supabase.auth.admin.listUsers();
+    const foundUser = userData?.users?.find((u: any) => u.email === userEmail);
+    if (foundUser) {
+      const created = new Date(foundUser.created_at);
+      const diffDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+      if (diffDays > 7) {
+        return Response.json({
+          response: "⚠️ Your trial version is only available for 7 days. Upgrade for more usage."
+        });
+      }
     }
   }
 }
